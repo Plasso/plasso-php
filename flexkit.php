@@ -3,7 +3,6 @@ namespace Plasso;
 
 function _send_request($method, $url, $data) {
   $url = "http://plassy.com$url";
-  var_dump(json_encode($data));
   $options = array(
       'http' => array(
           'header'  => "Content-type: application/json\r\n",
@@ -91,9 +90,15 @@ GQL;
 
     if ($response->data->member->shippingInfo) {
       // TODO: Add shipping info
+      $member_data['shipping_name'] = $response->data->member->shippingInfo->name;
+      $member_data['shipping_address'] = $response->data->member->shippingInfo->address;
+      $member_data['shipping_city'] = $response->data->member->shippingInfo->city;
+      $member_data['shipping_state'] = $response->data->member->shippingInfo->state;
+      $member_data['shipping_zip'] = $response->data->member->shippingInfo->zip;
+      $member_data['shipping_country'] = $response->data->member->shippingInfo->country;
     }
     if ($response->data->member->dataFields) {
-      // TODO: Add data items
+      $member_data['data_fields'] = $response->data->member->dataFields;
     }
 
     return $member_data;
