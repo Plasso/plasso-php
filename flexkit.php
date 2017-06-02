@@ -89,7 +89,6 @@ GQL;
     );
 
     if ($response->data->member->shippingInfo) {
-      // TODO: Add shipping info
       $member_data['shipping_name'] = $response->data->member->shippingInfo->name;
       $member_data['shipping_address'] = $response->data->member->shippingInfo->address;
       $member_data['shipping_city'] = $response->data->member->shippingInfo->city;
