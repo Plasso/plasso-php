@@ -4,9 +4,9 @@ Class Plasso {
   var $memberData;
   var $plassoToken;
   const plassoUrl = 'https://api.plasso.com';
-  const cookieName = '__plasso_flexkit';
+  const cookieName = '_plasso_flexkit';
 
-  private function __construct($plassoToken, $runProtect = true) {
+  function __construct($plassoToken, $runProtect = true) {
     $this->plassoToken = $plassoToken;
     if ($plassoToken === 'logout') {
       $this->authFail();
@@ -19,9 +19,9 @@ Class Plasso {
     }
   }
 
-  private function apiQuery($token) {
-    return `{
-      member(token: "{$token}") {
+  function apiQuery($token) {
+    return '{
+      member(token: "' . $token . '") {
         name,
         email,
         billingInfo {
@@ -79,12 +79,12 @@ Class Plasso {
           }
         }
       }
-    }`;
+    }';
   }
 
   function authenticate() {
-    if (!isset($this->plassoToken) && isset($_COOKIE[$this->cookieName]) && !empty($_COOKIE[$this->cookieName])) {
-      $cookieJson = json_decode($_COOKIE[$this->cookieName], true);
+    if (!isset($this->plassoToken) && isset($_COOKIE[self::cookieName]) && !empty($_COOKIE[self::cookieName])) {
+      $cookieJson = json_decode($_COOKIE[self::cookieName], true);
       if (isset($cookieJson['token']) && !empty($cookieJson['token'])) {
         $this->plassoToken = $cookieJson['token'];
       }
@@ -94,7 +94,7 @@ Class Plasso {
       return;
     }
     $query = rawurlencode(preg_replace('/\s+/', '', $this->apiQuery($this->plassoToken)));
-    $results = file_get_contents($this->plassoUrl . '/?query=' . $query);
+    $results = file_get_contents(self::plassoUrl . '/?query=' . $query);
     if (!$results){
       $this->authError();
       return;
@@ -106,15 +106,15 @@ Class Plasso {
       }
       $this->memberData = $json['data'];
       $cookieValue = json_encode(array('token' => $this->plassoToken, 'logout_url' => $json['data']['member']['space']['logout_url']));
-      setcookie($this->cookieName, $cookieValue, time() + 3600, '/', $_SERVER['SERVER_NAME'], false, true);
-      $_COOKIE[$this->cookieName] = $cookieValue;
+      setcookie(self::cookieName, $cookieValue, time() + 3600, '/', $_SERVER['SERVER_NAME'], false, true);
+      $_COOKIE[self::cookieName] = $cookieValue;
     }
   }
 
   function logout() {
     $logoutUrl = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'];
-    if (isset($_COOKIE[$this->cookieName]) && !empty($_COOKIE[$this->cookieName])) {
-      $cookieJson = json_decode($_COOKIE[$this->cookieName], true);
+    if (isset($_COOKIE[self::cookieName]) && !empty($_COOKIE[self::cookieName])) {
+      $cookieJson = json_decode($_COOKIE[self::cookieName], true);
       if (isset($cookieJson['logout_url']) && !empty($cookieJson['logout_url'])) {
         $logoutUrl = $cookieJson['logout_url'];
       }
@@ -124,8 +124,8 @@ Class Plasso {
   }
 
   function authFail() {
-    unset($_COOKIE[$this->cookieName]);
-    setcookie($this->cookieName, '', time() - 3600, '/', $_SERVER['SERVER_NAME'], false, true);
+    unset($_COOKIE[self::cookieName]);
+    setcookie(self::cookieName, '', time() - 3600, '/', $_SERVER['SERVER_NAME'], false, true);
     $this->plassoToken = 'logout';
   }
 
@@ -148,8 +148,7 @@ Class Plasso {
 }
 
 // To initalize, uncomment the next line:
-// $Plasso = new Plasso((isset($_GET['__logout'])) ? 'logout' : (isset($_GET['__plasso_token']) ? $_GET['__plasso_token'] : NULL));
-
+// $Plasso = new Plasso((isset($_GET['_logout'])) ? 'logout' : (isset($_GET['_plasso_token']) ? $_GET['_plasso_token'] : NULL));
 // Access the Plasso Member Data with: $Plasso->memberData
 
 ?>
