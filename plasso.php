@@ -3,73 +3,8 @@
 Class Plasso {
   var $memberData;
   var $plassoToken;
-  const $plassoUrl = 'https://api.plasso.com';
-  const $cookieName = '__plasso_flexkit';
-  const apiQuery = `{
-    member(token: "{$this->plassoToken}") {
-      alias,
-      name,
-      email,
-      billingInfo {
-        street,
-        city,
-        state,
-        zip,
-        country
-      },
-      connectedAccounts {
-        id,
-        name
-      },
-      dataFields {
-        id,
-        value
-      },
-      metadata,
-      payments {
-        transactionId,
-        createdAt,
-        createdAtReadable,
-        amount
-      },
-      postNotifications,
-      shippingInfo {
-        name,
-        address,
-        city,
-        state,
-        zip,
-        country
-      },
-      sources {
-        alias,
-        createdAt,
-        id,
-        brand,
-        last4,
-        type
-      },
-      space {
-        alias,
-        id,
-        name
-      },
-      status,
-      stripeCustomerId,
-      subscriptions {
-        alias,
-        id,
-        status,
-        createdAt,
-        createdAtReadable,
-        plan {
-          alias,
-          id,
-          name
-        }
-      }
-    }
-  }`;
+  const plassoUrl = 'https://api.plasso.com';
+  const cookieName = '__plasso_flexkit';
 
   private function __construct($plassoToken, $runProtect = true) {
     $this->plassoToken = $plassoToken;
@@ -84,6 +19,69 @@ Class Plasso {
     }
   }
 
+  private function apiQuery($token) {
+    return `{
+      member(token: "{$token}") {
+        name,
+        email,
+        billingInfo {
+          street,
+          city,
+          state,
+          zip,
+          country
+        },
+        connectedAccounts {
+          id,
+          name
+        },
+        dataFields {
+          id,
+          value
+        },
+        id,
+        metadata,
+        payments {
+          id,
+          amount,
+          createdAt,
+          createdAtReadable
+        },
+        postNotifications,
+        shippingInfo {
+          name,
+          address,
+          city,
+          state,
+          zip,
+          country
+        },
+        sources {
+          createdAt,
+          id,
+          brand,
+          last4,
+          type
+        },
+        space {
+          id,
+          name
+        },
+        status,
+        subscriptions {
+          id,
+          status,
+          createdAt,
+          createdAtReadable,
+          plan {
+            id,
+            name
+          }
+        }
+      }
+    }`;
+  }
+
   function authenticate() {
     if (!isset($this->plassoToken) && isset($_COOKIE[$this->cookieName]) && !empty($_COOKIE[$this->cookieName])) {
       $cookieJson = json_decode($_COOKIE[$this->cookieName], true);
@@ -95,7 +93,7 @@ Class Plasso {
       $this->authFail();
       return;
     }
-    $query = rawurlencode(preg_replace('/\s+/', '', $this->apiQuery));
+    $query = rawurlencode(preg_replace('/\s+/', '', $this->apiQuery($this->plassoToken)));
     $results = file_get_contents($this->plassoUrl . '/?query=' . $query);
     if (!$results){
       $this->authError();
