@@ -65,7 +65,8 @@ Class Plasso {
         },
         space {
           id,
-          name
+          name,
+          logoutUrl
         },
         status,
         subscriptions {
