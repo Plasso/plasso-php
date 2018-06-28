@@ -121,6 +121,8 @@ Class Plasso {
         $logoutUrl = $cookieJson['logout_url'];
       }
     }
+    unset($_COOKIE[self::cookieName]);
+    setcookie(self::cookieName, '', time() - 3600, '/', $_SERVER['SERVER_NAME'], false, true);
     echo '<html><head><meta http-equiv="refresh" content="0; URL=' . $logoutUrl . '" /></head><body></body></html>';
     exit;
   }
