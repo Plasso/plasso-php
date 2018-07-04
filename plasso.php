@@ -6,16 +6,42 @@ Class Plasso {
   const plassoUrl = 'https://api.plasso.com';
   const cookieName = '_plasso_flexkit';
 
-  function __construct($plassoToken, $runProtect = true) {
+  function __construct($plassoToken, $runProtect = true, $reloadWithoutToken = false) {
     $this->plassoToken = $plassoToken;
     if ($plassoToken === 'logout') {
       $this->authFail();
       $this->logout();
       return;
     }
+    if (empty($plassoToken) && isset($_COOKIE[self::cookieName]) && !empty($_COOKIE[self::cookieName])) {
+      $cookieJson = json_decode($_COOKIE[self::cookieName], true);
+      if (isset($cookieJson['token']) && !empty($cookieJson['token'])) {
+        $this->plassoToken = $cookieJson['token'];
+      }
+    }
     $this->authenticate();
     if ($runProtect) {
       $this->protect();
+    }
+    if ($reloadWithoutToken && strpos($_SERVER[REQUEST_URI], 'plasso_token')) {
+      $urlSplit = explode('?', $_SERVER[REQUEST_URI]);
+      $uri = $urlSplit[0];
+      if (isset($urlSplit[1])) {
+        $params = explode('&', $urlSplit[1]);
+        if (count($params) > 0) {
+          $newParams = [];
+          for ($i = 0; $i < count($params); $i++) {
+            if (!strpos($params[$i], 'plasso_token')) {
+              $newParams = $params[$i];
+            }
+          }
+          if (count($newParams) > 0) {
+            $uri .= '?' . implode('&', $newParams);
+          }
+        }
+      }
+      $currentUrl = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http') . '://' . $_SERVER[HTTP_HOST] . $uri;
+      header('Location: ' . $currentUrl);
     }
   }
 
